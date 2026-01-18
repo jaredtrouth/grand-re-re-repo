@@ -43,13 +43,13 @@ export async function GET(request: NextRequest) {
         };
 
         const total_plays =
-            stats.win_on_guess_1 +
-            stats.win_on_guess_2 +
-            stats.win_on_guess_3 +
-            stats.win_on_guess_4 +
-            stats.win_on_guess_5 +
-            stats.win_on_guess_6 +
-            stats.losses;
+            (stats.win_on_guess_1 ?? 0) +
+            (stats.win_on_guess_2 ?? 0) +
+            (stats.win_on_guess_3 ?? 0) +
+            (stats.win_on_guess_4 ?? 0) +
+            (stats.win_on_guess_5 ?? 0) +
+            (stats.win_on_guess_6 ?? 0) +
+            (stats.losses ?? 0);
 
         return NextResponse.json({ ...stats, total_plays });
     } catch (e) {
