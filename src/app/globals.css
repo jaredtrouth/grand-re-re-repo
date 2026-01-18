@@ -1,0 +1,828 @@
+@import "tailwindcss";
+
+/* ===============================================
+   VARIABLES
+   =============================================== */
+
+:root {
+  /* Core Bob's Burgers Palette */
+  --mustard-yellow: #FFD90F;
+  --ketchup-red: #D12E2E;
+  --lettuce-green: #6B8E23;
+  --chalkboard-black: #2A2A2A;
+  --burger-bun-brown: #D69F4C;
+
+  /* Extended Palette */
+  --chalk-white: #F5F5DC;
+  --chalk-gray: #B8B8A0;
+  --menu-border: #8B7355;
+  --shadow-dark: rgba(0, 0, 0, 0.4);
+  --wood-dark: #5A3E2B;
+  --wood-light: #8B5A2B;
+  --paper-cream: #F5E6C8;
+  --paper-aged: #E8D4B0;
+
+  /* Theme Variables */
+  --background: var(--chalk-white);
+  --foreground: var(--chalkboard-black);
+  --accent: var(--mustard-yellow);
+  --success: var(--lettuce-green);
+  --error: var(--ketchup-red);
+  --card-bg: #3A3A3A;
+  --card-border: #4A4A4A;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-handwritten: var(--font-handwritten);
+  --font-body: var(--font-body);
+}
+
+/* ===============================================
+   BASE STYLES
+   =============================================== */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), 'Open Sans', sans-serif;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+.font-handwritten {
+  font-family: var(--font-handwritten), 'Patrick Hand', cursive;
+  letter-spacing: 0.02em;
+}
+
+/* ===============================================
+   HEADER
+   =============================================== */
+
+.header {
+  background: var(--mustard-yellow);
+  /* border-bottom: 2px solid #3a3a3a; */
+  box-shadow: 0 1px 2px var(--shadow-dark);
+}
+
+.logo-banner {
+  background: var(--mustard-yellow);
+  border: 10px solid var(--ketchup-red);
+  border-top-left-radius: 255px 8px;
+  border-top-right-radius: 8px 225px;
+  border-bottom-right-radius: 225px 8px;
+  border-bottom-left-radius: 8px 255px;
+
+  padding: 0 0.5rem;
+  /* transform: skewX(-2deg); */
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
+  margin-top: 1rem;
+  width: max-content;
+  white-space: nowrap;
+  outline: 10px double var(--chalkboard-black);
+  outline-offset: -10px;
+}
+
+.logo-text {
+  font-family: var(--font-handwritten), 'Patrick Hand', cursive;
+  color: var(--ketchup-red);
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-shadow: -2px 2px 0 rgba(0, 0, 0, 0.8);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.scrap-paper {
+  position: absolute;
+  white-space: nowrap;
+  top: -2.25rem;
+  left: -5px;
+  z-index: 10;
+  background-color: var(--chalk-white);
+  color: var(--chalkboard-black);
+  padding: 0 10px;
+  border: 1px solid var(--chalk-gray);
+  transform: rotate(10deg) translateY(5px) scale(0.7);
+  box-shadow: 3px 3px 5px var(--chalkboard-black);
+  text-shadow: none;
+  border-top-left-radius: 255px 8px;
+  border-top-right-radius: 8px 225px;
+  border-bottom-right-radius: 225px 8px;
+  border-bottom-left-radius: 8px 255px;
+}
+
+.paper-anchor {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  vertical-align: middle;
+}
+
+.header-stat {
+  text-align: center;
+  color: var(--chalkboard-black);
+}
+
+.header-stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.header-stat-value {
+  font-family: var(--font-handwritten);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.header-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  padding: 8px;
+  transition: all 0.2s ease;
+  color: var(--chalkboard-black);
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ===============================================
+   WOOD FRAME CHALKBOARD
+   =============================================== */
+
+.wood-frame {
+  background: linear-gradient(135deg, var(--wood-dark) 0%, var(--wood-light) 50%, var(--wood-dark) 100%);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.chalkboard {
+  background: linear-gradient(145deg, #2E2E2E 0%, #1F1F1F 100%);
+  border-radius: 4px;
+  padding: 24px;
+  position: relative;
+}
+
+.chalkboard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(255, 255, 255, 0.01) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.todays-special {
+  font-family: var(--font-handwritten);
+  font-size: 2.2rem;
+  color: var(--chalkboard-black);
+  -webkit-text-stroke: 1px var(--chalk-white);
+  text-align: center;
+  margin-bottom: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.todays-special-date {
+  color: var(--chalk-gray);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.burger-name {
+  font-family: var(--font-handwritten);
+  font-size: 2.25rem;
+  line-height: 1.2;
+  color: var(--mustard-yellow);
+
+}
+
+/* ===============================================
+   HINT CARDS
+   =============================================== */
+
+.hint-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.hint-card.revealed {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.hint-card.locked {
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid transparent;
+}
+
+.hint-card.next-hint {
+  background: rgba(255, 217, 15, 0.15);
+  border: 2px solid var(--mustard-yellow);
+  box-shadow: 0 0 20px rgba(255, 217, 15, 0.3);
+}
+
+.hint-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.hint-icon.revealed {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hint-icon.locked {
+  background: rgba(128, 128, 128, 0.3);
+  color: var(--chalk-gray);
+}
+
+.hint-icon.next {
+  background: var(--mustard-yellow);
+  color: var(--chalkboard-black);
+}
+
+.hint-label {
+  font-family: var(--font-handwritten), 'Patrick Hand', cursive;
+  font-size: 1rem;
+  color: var(--chalk-white);
+}
+
+.hint-label.locked {
+  color: var(--chalk-gray);
+}
+
+.hint-label.next {
+  color: var(--mustard-yellow);
+}
+
+.hint-content {
+  color: var(--chalk-white);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.hint-badge {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.hint-badge.locked {
+  background: transparent;
+  color: var(--chalk-gray);
+}
+
+.hint-badge.missed {
+  background: rgba(209, 46, 46, 0.2);
+  color: var(--ketchup-red);
+  border: 1px solid var(--ketchup-red);
+}
+
+/* ===============================================
+   GUEST CHECK (RECEIPT INPUT)
+   =============================================== */
+
+.guest-check {
+  background: linear-gradient(180deg, var(--paper-cream) 0%, var(--paper-aged) 100%);
+  border-radius: 8px;
+  padding: 0;
+  position: relative;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+}
+
+.guest-check::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--ketchup-red) 0px,
+      var(--ketchup-red) 8px,
+      transparent 8px,
+      transparent 16px);
+  border-bottom: 2px solid #8B0000;
+}
+
+.guest-check-header {
+  padding: 36px 20px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.guest-check-title {
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--chalkboard-black);
+  letter-spacing: 0.1em;
+}
+
+.guest-check-number {
+  font-family: 'Courier New', monospace;
+  color: var(--ketchup-red);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.guest-check-body {
+  padding: 0 20px 20px;
+}
+
+.guest-check-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: var(--chalkboard-black);
+  opacity: 0.7;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.guest-check-input {
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  color: var(--chalkboard-black);
+  font-size: 1rem;
+  padding: 12px 16px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.guest-check-input:focus {
+  outline: none;
+  border-color: var(--mustard-yellow);
+  background: white;
+}
+
+.guest-check-input::placeholder {
+  color: #888;
+}
+
+.burger-indicators {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.burger-indicator {
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.burger-indicator.used {
+  filter: grayscale(100%) brightness(0.5);
+}
+
+.guest-check-footer {
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--chalkboard-black);
+  opacity: 0.5;
+  border-top: 1px dashed rgba(0, 0, 0, 0.2);
+}
+
+/* ===============================================
+   BUTTONS
+   =============================================== */
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--mustard-yellow) 0%, #E5C200 100%);
+  color: var(--chalkboard-black);
+  font-family: var(--font-handwritten), 'Patrick Hand', cursive;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 2px solid #B8A000;
+  box-shadow: 0 3px 0 #8B7800, 0 4px 8px var(--shadow-dark);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #8B7800, 0 6px 12px var(--shadow-dark);
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #8B7800, 0 2px 4px var(--shadow-dark);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===============================================
+   GAME OVER MODAL - CLIPBOARD STYLE
+   =============================================== */
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: linear-gradient(180deg, var(--paper-cream) 0%, var(--paper-aged) 100%);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  font-family: var(--font-handwritten), 'Patrick Hand', cursive;
+  font-size: 1.5rem;
+  color: var(--chalkboard-black);
+}
+
+.clipboard-modal {
+  background: linear-gradient(180deg, #C0C0C0 0%, #A0A0A0 100%);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.clipboard-clip {
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(180deg, #888 0%, #666 100%);
+  border-radius: 4px 4px 0 0;
+  margin: 0 auto -8px;
+  position: relative;
+  z-index: 1;
+}
+
+.clipboard-paper {
+  background: linear-gradient(180deg, var(--paper-cream) 0%, var(--paper-aged) 100%);
+  border-radius: 4px;
+  padding: 32px 24px;
+  position: relative;
+  min-height: 300px;
+}
+
+/* Coffee stain overlay */
+.clipboard-paper::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: 10%;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(139, 69, 19, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.order-up-stamp {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 4px solid var(--lettuce-green);
+  color: var(--lettuce-green);
+  font-family: var(--font-handwritten);
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+  margin-bottom: 16px;
+  box-shadow: inset 0 0 0 2px var(--lettuce-green);
+}
+
+.kitchen-closed-stamp {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 4px solid var(--ketchup-red);
+  color: var(--ketchup-red);
+  font-family: var(--font-handwritten);
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+  margin-bottom: 16px;
+  box-shadow: inset 0 0 0 2px var(--ketchup-red);
+}
+
+.receipt-card {
+  background: white;
+  padding: 20px;
+  border-radius: 0;
+  margin-top: 16px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Serrated edge */
+.receipt-card::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background:
+    linear-gradient(135deg, white 25%, transparent 25%),
+    linear-gradient(-135deg, white 25%, transparent 25%);
+  background-size: 12px 12px;
+}
+
+.receipt-header {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #ccc;
+  margin-bottom: 12px;
+  color: var(--chalkboard-black);
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #ddd;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--chalkboard-black);
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--mustard-yellow);
+  border: none;
+  border-radius: 24px;
+  font-family: var(--font-handwritten);
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--chalkboard-black);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.share-btn:hover {
+  transform: scale(1.02);
+}
+
+.watch-link {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  color: #666;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+/* ===============================================
+   GUESS ROWS
+   =============================================== */
+
+.guess-row {
+  border-radius: 8px;
+  padding: 12px 16px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.guess-row.correct {
+  background: linear-gradient(90deg, rgba(107, 142, 35, 0.2) 0%, rgba(107, 142, 35, 0.1) 100%);
+  border: 2px solid var(--lettuce-green);
+}
+
+.guess-row.incorrect {
+  background: linear-gradient(90deg, rgba(209, 46, 46, 0.15) 0%, rgba(209, 46, 46, 0.05) 100%);
+  border: 2px solid var(--ketchup-red);
+}
+
+/* ===============================================
+   ANIMATIONS
+   =============================================== */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hintReveal {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-5px);
+  }
+
+  40% {
+    transform: translateX(5px);
+  }
+
+  60% {
+    transform: translateX(-5px);
+  }
+
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes stampIn {
+  0% {
+    opacity: 0;
+    transform: rotate(-20deg) scale(1.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(-5deg) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.4s ease-out forwards;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-out;
+}
+
+.animate-stamp {
+  animation: stampIn 0.5s ease-out forwards;
+}
+
+/* ===============================================
+   SCROLLBAR
+   =============================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--chalkboard-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--burger-bun-brown);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #E5A85C;
+}
+
+/* ===============================================
+   MOBILE OPTIMIZATIONS
+   =============================================== */
+
+/* Medium screens - slight reduction */
+@media (max-width: 768px) {
+  .logo-text {
+    font-size: 2rem;
+    text-shadow: -1.5px 1.5px 0 rgba(0, 0, 0, 0.8);
+  }
+
+  .scrap-paper {
+    top: -2rem;
+  }
+
+  .burger-name {
+    font-size: 2rem;
+  }
+}
+
+/* Small screens - compact banner */
+@media (max-width: 640px) {
+  .logo-banner {
+    padding: 0 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .logo-text {
+    font-size: 1.75rem;
+    letter-spacing: -0.01em;
+    text-shadow: -1.2px 1.2px 0 rgba(0, 0, 0, 0.8);
+  }
+
+  .scrap-paper {
+    top: -1.75rem;
+  }
+
+  .burger-name {
+    font-size: 1.75rem;
+  }
+
+  .todays-special {
+    font-size: 1.75rem;
+  }
+
+  .hint-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .hint-label {
+    font-size: 0.9rem;
+  }
+
+  .hint-content {
+    font-size: 0.85rem;
+  }
+
+  .order-up-stamp {
+    font-size: 1.5rem;
+    padding: 8px 16px;
+  }
+}
