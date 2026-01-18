@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from "next";
 import { Open_Sans, Patrick_Hand_SC } from "next/font/google";
 import "./globals.css";
@@ -37,6 +38,7 @@ export default function RootLayout({
         className={`${patrickHand.variable} ${openSans.variable} antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
