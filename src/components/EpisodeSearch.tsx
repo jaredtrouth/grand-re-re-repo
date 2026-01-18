@@ -43,6 +43,15 @@ export function EpisodeSearch({ onSelect, disabled, disabledIds = [] }: EpisodeS
         return () => clearTimeout(timeoutId);
     }, [query]);
 
+    // Handle selection
+    const handleSelect = useCallback((episode: EpisodeSearchResult) => {
+        onSelect(episode);
+        setQuery('');
+        setResults([]);
+        setIsOpen(false);
+        inputRef.current?.focus();
+    }, [onSelect]);
+
     // Handle keyboard navigation
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (!isOpen || results.length === 0) return;
@@ -67,15 +76,7 @@ export function EpisodeSearch({ onSelect, disabled, disabledIds = [] }: EpisodeS
                 setIsOpen(false);
                 break;
         }
-    }, [isOpen, results, selectedIndex, disabledIds]);
-
-    const handleSelect = (episode: EpisodeSearchResult) => {
-        onSelect(episode);
-        setQuery('');
-        setResults([]);
-        setIsOpen(false);
-        inputRef.current?.focus();
-    };
+    }, [isOpen, results, selectedIndex, disabledIds, handleSelect]);
 
     // Format episode code (S01E05)
     const formatEpisodeCode = (season: number, episode: number) => {

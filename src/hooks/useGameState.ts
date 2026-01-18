@@ -139,9 +139,12 @@ export function useGameState(): UseGameStateReturn {
 
         for (let i = 0; i < gameState.revealedHints && i < HINT_ORDER.length; i++) {
             const hintType = HINT_ORDER[i];
-            // Assign directly, relying on interface compatibility or forcing
-            // @ts-ignore - Partial type mismatch with null vs undefined
-            visible[hintType] = puzzle.hints[hintType];
+            // Ensure type safety when assigning optional hint properties
+            const val = puzzle.hints[hintType];
+            if (val !== undefined) {
+                // Determine if we need to coerce null to undefined for strict types
+                visible[hintType] = val ?? undefined;
+            }
         }
 
         return visible;
@@ -158,7 +161,7 @@ export function useGameState(): UseGameStateReturn {
         getVisibleHints,
         revealedHintCount,
     };
-}
+};
 
 // Helper to submit stats to global tracker
 async function submitGlobalStats(date: string, guessNumber: number) {

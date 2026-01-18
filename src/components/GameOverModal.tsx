@@ -87,7 +87,7 @@ export function GameOverModal({ isOpen, gameState, puzzleDate, burgerName, corre
                     {/* Burger name */}
                     {burgerName && (
                         <div className="mt-4">
-                            <p className="text-sm text-(--chalkboard-black)/60 uppercase tracking-wide">Today's Burger</p>
+                            <p className="text-sm text-(--chalkboard-black)/60 uppercase tracking-wide">Today&apos;s Burger</p>
                             <h2 className="font-handwritten text-2xl text-(--ketchup-red) mb-1">
                                 {burgerName}
                             </h2>

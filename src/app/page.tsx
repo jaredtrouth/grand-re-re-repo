@@ -24,7 +24,7 @@ export default function Home() {
   const [showStats, setShowStats] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  const hints = puzzle?.hints ?? {};
+  const hints = puzzle?.hints;
   const guessedIds = gameState?.guesses.map(g => g.episode.id) ?? [];
   const isGameOver = gameState?.status === 'WON' || gameState?.status === 'LOST';
   const correctEpisode = isGameOver
@@ -134,14 +134,14 @@ export default function Home() {
             </p>
 
             {/* Burger of the Day Display */}
-            {hints && (hints as any).burger_name && (hints as any).burger_name !== 'Not featured this episode' ? (
+            {hints?.burger_name && hints.burger_name !== 'Not featured this episode' ? (
               <div className="my-6 text-center">
                 <p className="burger-name md:text-3xl text-(--mustard-yellow) leading-relaxed">
-                  &quot;{(hints as any).burger_name}&quot;
+                  &quot;{hints.burger_name}&quot;
                 </p>
-                {(hints as any).burger_description && (
+                {hints.burger_description && (
                   <p className="font-handwritten text-lg text-(--chalk-gray) mt-2 opacity-90">
-                    {(hints as any).burger_description}
+                    {hints.burger_description}
                   </p>
                 )}
               </div>
@@ -155,7 +155,7 @@ export default function Home() {
 
             {/* Hints */}
             <HintGrid
-              hints={hints as Record<string, string | null>}
+              hints={(hints ?? {}) as Record<string, string | null>}
               revealedCount={revealedHintCount}
             />
           </div>

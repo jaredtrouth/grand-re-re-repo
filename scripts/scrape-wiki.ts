@@ -214,6 +214,7 @@ async function scrapeGagsPage(episodeUrl: string, episodeTitle: string): Promise
 
             // Collect all content elements between this heading and the next
             let $next = $heading.next();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const sectionElements: cheerio.Cheerio<any>[] = [];
 
             while ($next.length && !$next.is('h2') && !$next.is('h3')) {
@@ -222,6 +223,7 @@ async function scrapeGagsPage(episodeUrl: string, episodeTitle: string): Promise
             }
 
             // Helper to extract relevant text from a set of elements
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const extractText = (elements: cheerio.Cheerio<any>[]) => {
                 const results: string[] = [];
 
@@ -284,7 +286,7 @@ async function scrapeGagsPage(episodeUrl: string, episodeTitle: string): Promise
             }
         }
 
-    } catch (e) {
+    } catch {
         // Gags page might not exist for some episodes
     }
 
@@ -329,7 +331,7 @@ async function scrapeEpisodePage(url: string): Promise<EpisodeData> {
         }
 
         return data;
-    } catch (e) {
+    } catch {
         console.error(`    ⚠️ Failed to scrape ${url}`);
         return { plot_summary: null, image_url: null };
     }

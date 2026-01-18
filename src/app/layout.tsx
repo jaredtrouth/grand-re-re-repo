@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Patrick_Hand, Open_Sans, Patrick_Hand_SC } from "next/font/google";
+import { Open_Sans, Patrick_Hand_SC } from "next/font/google";
 import "./globals.css";
 
 // Handwritten font for headings - Bob's Burgers style
