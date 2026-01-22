@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { EpisodeSearchResult } from '@/types/episode';
+import { EpisodeSearchResult, GuessAttempt } from '@/types/episode';
 
 interface GuestCheckProps {
     onGuess: (episode: EpisodeSearchResult) => void;
@@ -9,15 +9,17 @@ interface GuestCheckProps {
     maxGuesses: number;
     disabled: boolean;
     guessedIds: string[];
+    guesses?: GuessAttempt[];
 }
 
-export function GuestCheck({ onGuess, guessesUsed, maxGuesses, disabled, guessedIds }: GuestCheckProps) {
+export function GuestCheck({ onGuess, guessesUsed, maxGuesses, disabled, guessedIds, guesses = [] }: GuestCheckProps) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<EpisodeSearchResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [selectedEpisode, setSelectedEpisode] = useState<EpisodeSearchResult | null>(null);
+    const [tappedIndex, setTappedIndex] = useState<number | null>(null); // For two-tap mobile selection
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -89,8 +91,30 @@ export function GuestCheck({ onGuess, guessesUsed, maxGuesses, disabled, guessed
         setQuery(`${formatEpisodeCode(episode.season, episode.episode_number)} - ${episode.title}`);
         setResults([]);
         setShowDropdown(false);
+        setTappedIndex(null);
         inputRef.current?.focus();
     };
+
+    // Handle click/tap on dropdown item - two-tap for mobile only
+    const handleItemClick = (episode: EpisodeSearchResult, index: number) => {
+        // Check if device has hover capability (desktop) vs touch-only (mobile)
+        const hasHover = window.matchMedia('(hover: hover)').matches;
+
+        if (hasHover) {
+            // Desktop: select immediately on click
+            handleSelect(episode);
+        } else {
+            // Mobile: require two taps
+            if (tappedIndex === index) {
+                handleSelect(episode);
+            } else {
+                // First tap: expand the synopsis
+                setSelectedIndex(index);
+                setTappedIndex(index);
+            }
+        }
+    };
+
 
     const handleSubmit = () => {
         if (selectedEpisode) {
@@ -114,22 +138,22 @@ export function GuestCheck({ onGuess, guessesUsed, maxGuesses, disabled, guessed
 
     return (
         <div className="guest-check">
-            {/* Header with spiral binding - created via CSS ::before */}
+            {/* Header */}
             <div className="guest-check-header">
-                <div>
-                    <div className="guest-check-title">GUEST CHECK</div>
-                    <div className="text-xs text-(--chalkboard-black) opacity-50 mt-1">
-                        TABLE 5 • 4 GUESTS
-                    </div>
+                <div className="guest-check-title">GUEST CHECK</div>
+                <div className="guest-check-meta">
+                    <div className="guest-check-number">#{orderNumber}</div>
+                    <div className="guest-check-table">TABLE 5 - 4 GUESTS</div>
                 </div>
-                <div className="guest-check-number">#{orderNumber}</div>
             </div>
 
-            <div className="guest-check-body">
-                <div className="guest-check-label">
-                    TAKE ORDER (GUESS THE EPISODE)
-                </div>
+            {/* Take Order Section */}
+            <div className="take-order-section">
+                <div className="take-order-label">Take Order (Guess the Episode)</div>
+            </div>
 
+            {/* Input Body */}
+            <div className="guest-check-body">
                 <div className="relative">
                     <input
                         ref={inputRef}
@@ -156,49 +180,73 @@ export function GuestCheck({ onGuess, guessesUsed, maxGuesses, disabled, guessed
                     {showDropdown && (
                         <div
                             ref={dropdownRef}
-                            className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                            className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-y-auto"
                         >
                             {results.map((episode, index) => (
                                 <button
                                     key={episode.id}
-                                    onClick={() => handleSelect(episode)}
+                                    onClick={() => handleItemClick(episode, index)}
+
                                     className={`
-                    w-full px-4 py-3 text-left flex items-center gap-3 transition-colors
-                    ${index === selectedIndex ? 'bg-[--mustard-yellow]/20' : 'hover:bg-gray-100'}
-                    ${index !== 0 ? 'border-t border-gray-200' : ''}
-                  `}
+                                        w-full px-4 py-3 text-left flex flex-col gap-1 transition-colors group
+                                        ${index === selectedIndex ? 'bg-[--mustard-yellow]/20' : 'hover:bg-gray-100'}
+                                        ${index !== 0 ? 'border-t border-gray-200' : ''}
+                                    `}
                                 >
-                                    <span className="font-mono text-sm font-bold text-[--ketchup-red]">
-                                        {formatEpisodeCode(episode.season, episode.episode_number)}
-                                    </span>
-                                    <span className="text-[--chalkboard-black] truncate">
-                                        {episode.title}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="font-mono text-sm font-bold text-[--ketchup-red] shrink-0">
+                                            {formatEpisodeCode(episode.season, episode.episode_number)}
+                                        </span>
+                                        <span className="text-[--chalkboard-black] font-medium">
+                                            {episode.title}
+                                        </span>
+                                    </div>
+                                    {episode.synopsis && (
+                                        <p className={`
+                                            text-sm text-gray-500 pl-[4.5rem]
+                                            ${index === selectedIndex ? '' : 'line-clamp-1 group-hover:line-clamp-none'}
+                                        `}>
+                                            {episode.synopsis}
+                                        </p>
+                                    )}
                                 </button>
                             ))}
                         </div>
                     )}
                 </div>
 
-                <div className="flex items-center justify-between mt-4">
-                    <div className="burger-indicators">
-                        {burgerIndicators}
-                    </div>
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={disabled || !selectedEpisode}
-                        className="btn-primary"
-                    >
-                        Order Up! 🔔
-                    </button>
+                {/* Order Up Button */}
+                <button
+                    onClick={handleSubmit}
+                    disabled={disabled || !selectedEpisode}
+                    className="order-up-button"
+                >
+                    Order Up!
+                </button>
+
+                {/* Burger Indicators */}
+                <div className="burger-indicators">
+                    {burgerIndicators}
                 </div>
             </div>
 
-            <div className="guest-check-footer">
-                <span>TAX INCLUDED</span>
-                <span>THANK YOU!</span>
-            </div>
+            {/* Order History */}
+            {guesses.length > 0 && (
+                <div className="order-history">
+                    <div className="order-history-title">Order History</div>
+                    <div className="order-history-list">
+                        {guesses.map((guess) => (
+                            <div key={guess.episode.id} className="order-history-item">
+                                <span className="order-history-text">S{guess.episode.season}E{guess.episode.episode_number} - {guess.episode.title}</span>
+                                <span className={`order-history-icon ${guess.isCorrect ? 'correct' : 'incorrect'}`}>
+                                    {guess.isCorrect ? '✓' : '✗'}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
