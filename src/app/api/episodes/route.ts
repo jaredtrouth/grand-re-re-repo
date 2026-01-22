@@ -8,48 +8,56 @@ const DEMO_EPISODES = [
         season: 3,
         episode_number: 12,
         title: 'Broadcast Wagstaff School News',
+        synopsis: 'Tina takes over the school news show.',
     },
     {
         id: 'demo-002',
         season: 4,
         episode_number: 3,
         title: 'Seaplane!',
+        synopsis: 'Linda starts an affair with a pilot.',
     },
     {
         id: 'demo-003',
         season: 5,
         episode_number: 2,
         title: 'Tina and the Real Ghost',
+        synopsis: 'Tina falls for a ghost named Jeff.',
     },
     {
         id: 'demo-004',
         season: 1,
         episode_number: 1,
         title: 'Human Flesh',
+        synopsis: 'Bob faces rumors that his burgers are made of human flesh.',
     },
     {
         id: 'demo-005',
         season: 2,
         episode_number: 8,
         title: 'Bad Tina',
+        synopsis: 'Tina is blackmailed by a bad girl at school.',
     },
     {
         id: 'demo-006',
         season: 6,
         episode_number: 19,
         title: 'Glued, Where\'s My Bob?',
+        synopsis: 'Bob gets glued to the toilet before a magazine interview.',
     },
     {
         id: 'demo-007',
         season: 9,
         episode_number: 1,
         title: 'Just One of the Boyz 4 Now for Now',
+        synopsis: 'Tina joins a boy band tribute group.',
     },
     {
         id: 'demo-008',
         season: 7,
         episode_number: 7,
         title: 'The Last Gingerbread House on the Left',
+        synopsis: 'The Belchers compete in a gingerbread house contest.',
     },
 ];
 
@@ -104,6 +112,7 @@ export async function GET(request: NextRequest) {
                 season: ep.season,
                 episode_number: ep.episode_number,
                 title: ep.title,
+                synopsis: ep.synopsis,
                 hash: createHash('sha256').update(ep.id).digest('hex'),
             }));
 
@@ -117,10 +126,11 @@ export async function GET(request: NextRequest) {
         // Build query - search by title, or parse "S03E12" format
         let dbQuery = supabase
             .from('episodes')
-            .select('id, season, episode_number, title')
+            .select('id, season, episode_number, title, plot_summary')
             .order('season', { ascending: true })
             .order('episode_number', { ascending: true })
             .limit(20);
+
 
         if (query) {
             const upperQuery = query.toUpperCase();
@@ -163,8 +173,10 @@ export async function GET(request: NextRequest) {
             season: ep.season,
             episode_number: ep.episode_number,
             title: ep.title,
+            synopsis: ep.plot_summary || undefined,
             hash: createHash('sha256').update(ep.id).digest('hex'),
         }));
+
 
         return NextResponse.json({ episodes });
     } catch (e) {
