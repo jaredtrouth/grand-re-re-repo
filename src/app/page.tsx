@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
-import { HintGrid } from '@/components/HintCard';
+import { EpisodeStill } from '@/components/EpisodeStill';
+import { QuoteDisplay } from '@/components/QuoteDisplay';
 import { GuestCheck } from '@/components/GuestCheck';
-import { GuessList } from '@/components/GuessRow';
 import { StatsModal } from '@/components/StatsModal';
 import { HelpModal } from '@/components/HelpModal';
 import { GameOverModal } from '@/components/GameOverModal';
 import { getLocalStats } from '@/lib/localStorage';
 import { MAX_GUESSES } from '@/types/episode';
+
 
 export default function Home() {
   const {
@@ -18,13 +19,12 @@ export default function Home() {
     isLoading,
     error,
     makeGuess,
-    revealedHintCount
+    revealState
   } = useGameState();
 
   const [showStats, setShowStats] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  const hints = puzzle?.hints;
   const guessedIds = gameState?.guesses.map(g => g.episode.id) ?? [];
   const isGameOver = gameState?.status === 'WON' || gameState?.status === 'LOST';
   const correctEpisode = isGameOver
@@ -76,9 +76,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header - Dark bar with logo */}
+      {/* Header */}
       <header className="header sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between relative">
+        <div className="max-w-[1200px] mx-auto px-4 py-3 flex items-center justify-between relative">
 
           {/* Left - Help button */}
           <button onClick={() => setShowHelp(true)} className="header-btn" aria-label="Help">
@@ -88,12 +88,12 @@ export default function Home() {
             </svg>
           </button>
 
-          {/* Center - Logo banner (absolutely positioned for true centering) */}
+          {/* Center - Logo banner */}
           <div className="logo-banner absolute left-1/2 -translate-x-1/2">
             <span className="logo-text">Burger of the Day<span className="paper-anchor"><span className="scrap-paper">-dle</span></span></span>
           </div>
 
-          {/* Right - Stats & Profile */}
+          {/* Right - Stats */}
           <div className="flex items-center gap-4">
             <div className="header-stat hidden md:block">
               <div className="header-stat-label">STREAK</div>
@@ -113,78 +113,105 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Demo mode banner */}
-      {puzzle?.demo_mode && (
-        <div className="bg-(--mustard-yellow)/10 border-b border-(--mustard-yellow)/30 px-4 py-2 text-center">
-          <p className="text-sm text-(--mustard-yellow) font-handwritten">
-            🎮 <strong>Demo Mode</strong> - Sample data
-          </p>
-        </div>
-      )}
-
-      {/* Main content - Wood framed chalkboard */}
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-6 space-y-6">
-        {/* Chalkboard section with wood frame */}
-        <div className="wood-frame">
-          <div className="chalkboard">
-            {/* Header */}
-            <h2 className="todays-special">Today&apos;s Special</h2>
-            <p className="todays-special-date">
-              {puzzle ? formatDate(puzzle.puzzle_id) : ''}
-            </p>
-
-            {/* Burger of the Day Display */}
-            {hints?.burger_name && hints.burger_name !== 'Not featured this episode' ? (
-              <div className="my-6 text-center">
-                <p className="burger-name md:text-3xl text-(--mustard-yellow) leading-relaxed">
-                  &quot;{hints.burger_name}&quot;
-                </p>
-                {hints.burger_description && (
-                  <p className="font-handwritten text-lg text-(--chalk-gray) mt-2 opacity-90">
-                    {hints.burger_description}
+      {/* Main content */}
+      <main className="flex-1 px-4 py-6">
+        <div className="game-layout">
+          {/* Left/Top - Chalkboard section */}
+          <div className="wood-frame">
+            <div className="chalkboard">
+              {/* Header row with date */}
+              <div className="flex items-start justify-center mb-2">
+                <div className="text-center">
+                  <h2 className="todays-special text-xl md:text-2xl mb-0">Today&apos;s Special</h2>
+                  <p className="todays-special-date text-xs">
+                    {puzzle ? formatDate(puzzle.puzzle_id) : ''}
                   </p>
-                )}
+                </div>
               </div>
-            ) : (
-              <div className="my-8 text-center opacity-60">
-                <p className="font-handwritten text-xl text-(--chalk-gray)">
-                  (No Burger Special Today)
-                </p>
-              </div>
-            )}
 
-            {/* Hints */}
-            <HintGrid
-              hints={(hints ?? {}) as Record<string, string | null>}
-              revealedCount={revealedHintCount}
+              {/* Burger Name (Anchor) with Season/Episode */}
+              {puzzle?.burger && (
+                <h3 className="burger-name text-center text-xl md:text-2xl mb-4">
+                  {puzzle.burger.name}
+                  {puzzle?.episode && (
+                    <span className="text-base font-normal">
+                      {' '}(S{revealState.seasonVisible
+                        ? String(puzzle.episode.season).padStart(2, '0')
+                        : '??'}E{isGameOver
+                          ? String(puzzle.episode.episode_number).padStart(2, '0')
+                          : '??'})
+                    </span>
+                  )}
+                </h3>
+              )}
+
+              <div className="chalkboard-tv-clue">
+                <EpisodeStill
+                  stillUrl={puzzle?.still_url ?? null}
+                  isVisible={revealState.stillVisible}
+                  isBlurred={revealState.stillBlurred}
+                />
+
+                <div className="chalkboard-clue-section hidden max-lg:flex flex-col gap-2">
+                  {puzzle?.quote && (
+                    <div>
+                      <span className="clue-label">Quote:</span>
+                      <p className="clue-text">
+                        &quot;{puzzle.quote.text}&quot;
+                        {revealState.quoteAttributionVisible && puzzle.quote.speaker && (
+                          <> - {puzzle.quote.speaker}</>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="hidden lg:block">
+                <QuoteDisplay
+                  quote={puzzle?.quote ?? null}
+                  showAttribution={revealState.quoteAttributionVisible}
+                />
+              </div>
+
+              <div className="hints-inline">
+                <div className="hint-inline-item">
+                  <span className="hint-inline-label">Store Next Door</span>
+                  {revealState.storeVisible ? (
+                    <span>&quot;{puzzle?.hints.store_next_door || 'Not shown'}&quot;</span>
+                  ) : (
+                    <span className="text-(--chalk-gray)">🔒</span>
+                  )}
+                </div>
+                <div className="hint-inline-item">
+                  <span className="hint-inline-label">Pest Control Truck</span>
+                  {revealState.pestControlVisible ? (
+                    <span>&quot;{puzzle?.hints.pest_control || 'Not shown'}&quot;</span>
+                  ) : (
+                    <span className="text-(--chalk-gray)">🔒</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {!isGameOver && (
+            <GuestCheck
+              onGuess={makeGuess}
+              guessesUsed={gameState?.guesses.length ?? 0}
+              maxGuesses={MAX_GUESSES}
+              disabled={isGameOver}
+              guessedIds={guessedIds}
+              guesses={gameState?.guesses ?? []}
             />
-          </div>
+          )}
         </div>
-
-        {/* Guest check input - only show when game is in progress */}
-        {!isGameOver && (
-          <GuestCheck
-            onGuess={makeGuess}
-            guessesUsed={gameState?.guesses.length ?? 0}
-            maxGuesses={MAX_GUESSES}
-            disabled={isGameOver}
-            guessedIds={guessedIds}
-          />
-        )}
-
-        {/* Guess history */}
-        {gameState && gameState.guesses.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="font-handwritten text-xl text-(--blackboard-black)">
-              📝 Order History
-            </h3>
-            <GuessList guesses={gameState.guesses} />
-          </div>
-        )}
       </main>
 
+
       {/* Footer */}
-      <footer className="py-4 text-center text-sm text-(--blackboard-black) font-handwritten">
+      <footer className="py-4 text-center text-xl text-(--blackboard-black) font-handwritten">
         Made with 🍔 by fans, for fans
       </footer>
 
@@ -197,7 +224,7 @@ export default function Home() {
           isOpen={true}
           gameState={gameState}
           puzzleDate={puzzle.puzzle_id}
-          burgerName={puzzle.hints?.burger_name}
+          burgerName={puzzle.burger.name}
           correctEpisode={correctEpisode ? {
             season: correctEpisode.season,
             episode_number: correctEpisode.episode_number,

@@ -7,7 +7,8 @@ import {
     EpisodeSearchResult,
     GuessAttempt,
     MAX_GUESSES,
-    HINT_ORDER
+    RevealStep,
+    REVEAL_STATES
 } from '@/types/episode';
 import { validateGuess } from '@/lib/hash';
 import {
@@ -23,8 +24,7 @@ interface UseGameStateReturn {
     isLoading: boolean;
     error: string | null;
     makeGuess: (episode: EpisodeSearchResult) => Promise<void>;
-    getVisibleHints: () => Partial<DailyPuzzle['hints']>;
-    revealedHintCount: number;
+    revealState: typeof REVEAL_STATES[RevealStep];
 }
 
 export function useGameState(): UseGameStateReturn {
@@ -52,15 +52,15 @@ export function useGameState(): UseGameStateReturn {
                 const savedState = getSavedGameState(puzzleData.puzzle_id);
 
                 if (savedState) {
-                    const parsed = JSON.parse(savedState) as GameState;
-                    setGameState(parsed);
+                    const parsed = JSON.parse(savedState);
+                    setGameState(parsed as GameState);
                 } else {
-                    // Initialize new game
+                    // Initialize new game at Step 0
                     const newState: GameState = {
                         puzzleId: puzzleData.puzzle_id,
                         guesses: [],
                         status: 'IN_PROGRESS',
-                        revealedHints: 0, // Start with NO hints revealed
+                        revealStep: 0,
                         answerHash: puzzleData.answer_hash,
                     };
                     setGameState(newState);
@@ -107,7 +107,7 @@ export function useGameState(): UseGameStateReturn {
         const guessCount = newGuesses.length;
 
         let newStatus: GameState['status'] = 'IN_PROGRESS';
-        let newRevealedHints = gameState.revealedHints;
+        let newRevealStep: RevealStep = gameState.revealStep;
 
         if (isCorrect) {
             newStatus = 'WON';
@@ -116,41 +116,24 @@ export function useGameState(): UseGameStateReturn {
             submitGlobalStats(puzzle.puzzle_id, guessCount);
         } else if (guessCount >= MAX_GUESSES) {
             newStatus = 'LOST';
+            newRevealStep = 6; // Full reveal on loss
             updateStatsAfterGame(false, guessCount, puzzle.puzzle_id);
             submitGlobalStats(puzzle.puzzle_id, 0); // 0 = loss
         } else {
-            // Reveal next hint after wrong guess
-            newRevealedHints = Math.min(newRevealedHints + 1, HINT_ORDER.length);
+            // Progress to next reveal step after wrong guess
+            newRevealStep = Math.min(gameState.revealStep + 1, 5) as RevealStep;
         }
 
         setGameState({
             ...gameState,
             guesses: newGuesses,
             status: newStatus,
-            revealedHints: newRevealedHints,
+            revealStep: newRevealStep,
         });
     }, [puzzle, gameState]);
 
-    // Get hints that should be visible based on game progress
-    const getVisibleHints = useCallback((): Partial<DailyPuzzle['hints']> => {
-        if (!puzzle || !gameState) return {};
-
-        const visible: Partial<DailyPuzzle['hints']> = {};
-
-        for (let i = 0; i < gameState.revealedHints && i < HINT_ORDER.length; i++) {
-            const hintType = HINT_ORDER[i];
-            // Ensure type safety when assigning optional hint properties
-            const val = puzzle.hints[hintType];
-            if (val !== undefined) {
-                // Determine if we need to coerce null to undefined for strict types
-                visible[hintType] = val ?? undefined;
-            }
-        }
-
-        return visible;
-    }, [puzzle, gameState]);
-
-    const revealedHintCount = gameState?.revealedHints ?? 0;
+    // Get current reveal state based on game progress
+    const revealState = REVEAL_STATES[gameState?.revealStep ?? 0];
 
     return {
         puzzle,
@@ -158,10 +141,9 @@ export function useGameState(): UseGameStateReturn {
         isLoading,
         error,
         makeGuess,
-        getVisibleHints,
-        revealedHintCount,
+        revealState,
     };
-};
+}
 
 // Helper to submit stats to global tracker
 async function submitGlobalStats(date: string, guessNumber: number) {
@@ -175,3 +157,4 @@ async function submitGlobalStats(date: string, guessNumber: number) {
         console.error('Failed to submit global stats:', e);
     }
 }
+

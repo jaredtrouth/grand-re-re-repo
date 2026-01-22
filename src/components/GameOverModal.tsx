@@ -80,7 +80,7 @@ export function GameOverModal({ isOpen, gameState, puzzleDate, burgerName, corre
                 {/* Paper content */}
                 <div className="clipboard-paper text-center">
                     {/* Stamp */}
-                    <div className={won ? 'order-up-stamp animate-stamp' : 'kitchen-closed-stamp animate-stamp'}>
+                    <div className={won ? 'stamp order-up-stamp animate-stamp' : 'stamp kitchen-closed-stamp animate-stamp'}>
                         {won ? 'ORDER UP!' : 'KITCHEN CLOSED!'}
                     </div>
 

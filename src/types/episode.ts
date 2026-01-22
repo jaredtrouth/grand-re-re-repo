@@ -1,33 +1,45 @@
-// Episode for search/autocomplete (minimal data to prevent spoilers)
 export interface EpisodeSearchResult {
   id: string;
   season: number;
   episode_number: number;
   title: string;
+  synopsis?: string;
   hash: string; // SHA-256 hash of ID for client-side validation
 }
 
-// Daily puzzle data from API
+
+export interface EpisodeQuote {
+  text: string;
+  speaker: string | null; // null until revealed
+}
+
 export interface DailyPuzzle {
   puzzle_id: string; // ISO date string
-  answer_hash: string; // SHA-256 hash of burger ID
-  hints: {
-    burger_name: string;
-    burger_description: string | null;
-    store_next_door: string;
-    pest_control: string;
-    other_burgers: string | null; // Other burgers from same episode
-    plot_summary: string;
+  answer_hash: string; // SHA-256 hash of episode ID
+
+  burger: {
+    name: string;
+    description?: string | null;
   };
+
+  quote: EpisodeQuote | null;
+
+  still_url: string | null;
+
+  hints: {
+    store_next_door: string | null;
+    pest_control: string | null;
+    original_air_date: string | null;
+    guest_stars: string | null;
+  };
+
   episode: {
     season: number;
     episode_number: number;
     title: string;
   };
-  demo_mode?: boolean; // True when running without Supabase
 }
 
-// Global statistics for a puzzle
 export interface GlobalStats {
   date: string;
   win_on_guess_1: number;
@@ -40,7 +52,6 @@ export interface GlobalStats {
   total_plays: number;
 }
 
-// Personal statistics stored in localStorage
 export interface LocalStats {
   gamesPlayed: number;
   gamesWon: number;
@@ -59,44 +70,39 @@ export interface LocalStats {
   lastGameStatus: 'WON' | 'LOST' | 'IN_PROGRESS' | null;
 }
 
-// Game state for current session
+export type RevealStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
 export interface GameState {
   puzzleId: string;
   guesses: GuessAttempt[];
   status: 'IN_PROGRESS' | 'WON' | 'LOST';
-  revealedHints: number; // 1-5, how many hints are visible
+  revealStep: RevealStep;
   answerHash: string;
 }
 
-// A single guess attempt
 export interface GuessAttempt {
   episode: EpisodeSearchResult;
   isCorrect: boolean;
   timestamp: number;
 }
 
-// Hint types for progressive reveal (updated order)
-export type HintType =
-  | 'burger_name'
-  | 'store_next_door'
-  | 'pest_control'
-  | 'other_burgers'
-  | 'plot_summary';
-
-export const HINT_ORDER: HintType[] = [
-  'store_next_door',   // Store pun (Hint #1)
-  'pest_control',      // Van parody
-  'other_burgers',     // Other burgers from episode (nullable)
-  'plot_summary',      // Episode description (easiest)
-];
-
-export const HINT_LABELS: Record<HintType, string> = {
-  burger_name: '🍔 Burger of the Day',
-  store_next_door: '🏪 Store Next Door',
-  pest_control: '🚐 Pest Control Truck',
-  other_burgers: '🍔 Other Burgers',
-  plot_summary: '📺 Plot Summary',
+export const REVEAL_STATES: Record<RevealStep, {
+  quoteAttributionVisible: boolean;
+  stillVisible: boolean;
+  stillBlurred: boolean;
+  storeVisible: boolean;
+  pestControlVisible: boolean;
+  seasonVisible: boolean;
+}> = {
+  0: { quoteAttributionVisible: false, stillVisible: false, stillBlurred: true, storeVisible: false, pestControlVisible: false, seasonVisible: false },
+  1: { quoteAttributionVisible: true, stillVisible: false, stillBlurred: true, storeVisible: false, pestControlVisible: false, seasonVisible: false },
+  2: { quoteAttributionVisible: true, stillVisible: true, stillBlurred: true, storeVisible: false, pestControlVisible: false, seasonVisible: false },
+  3: { quoteAttributionVisible: true, stillVisible: true, stillBlurred: true, storeVisible: true, pestControlVisible: false, seasonVisible: false },
+  4: { quoteAttributionVisible: true, stillVisible: true, stillBlurred: true, storeVisible: true, pestControlVisible: true, seasonVisible: false },
+  5: { quoteAttributionVisible: true, stillVisible: true, stillBlurred: false, storeVisible: true, pestControlVisible: true, seasonVisible: true },
+  6: { quoteAttributionVisible: true, stillVisible: true, stillBlurred: false, storeVisible: true, pestControlVisible: true, seasonVisible: true },
 };
 
 // Maximum guesses allowed
 export const MAX_GUESSES = 6;
+
