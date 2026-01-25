@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Middleware to protect admin routes
+ * Proxy to protect admin routes
  * Checks for auth cookies and redirects to login if not authenticated
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Only protect /admin/dashboard routes
