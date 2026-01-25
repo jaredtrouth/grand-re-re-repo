@@ -35,30 +35,7 @@ export async function GET() {
 
 
         // Build response
-        const response: DailyPuzzle = {
-            puzzle_id: puzzle.puzzle_id,
-            answer_hash: puzzle.answer_hash,
-            burger: {
-                name: puzzle.burger_name || 'Burger of the Day',
-                description: puzzle.burger_description,
-            },
-            quote: puzzle.quote_text ? {
-                text: puzzle.quote_text,
-                speaker: puzzle.quote_speaker,
-            } : null,
-            still_url: puzzle.still_url || null,
-            hints: {
-                store_next_door: puzzle.store_next_door,
-                pest_control: puzzle.pest_control,
-                original_air_date: puzzle.original_air_date,
-                guest_stars: puzzle.guest_stars,
-            },
-            episode: {
-                season: puzzle.episode_season,
-                episode_number: puzzle.episode_number,
-                title: puzzle.episode_title,
-            },
-        };
+        const response: DailyPuzzle = JSON.parse(JSON.stringify(puzzle));
 
         return NextResponse.json(response);
     } catch (e) {

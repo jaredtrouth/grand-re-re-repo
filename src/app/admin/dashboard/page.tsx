@@ -28,9 +28,18 @@ interface Burger {
     episode_id: string;
 }
 
+interface Quote {
+    id: string;
+    quote: string;
+    speaker: string | null;
+    location: string | null;
+    episode_id: string;
+}
+
 export default function AdminDashboard() {
     const [episodes, setEpisodes] = useState<Episode[]>([]);
     const [burgers, setBurgers] = useState<Burger[]>([]);
+    const [quotes, setQuotes] = useState<Quote[]>([]);
     const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [seasonFilter, setSeasonFilter] = useState<number | null>(null);
@@ -62,6 +71,7 @@ export default function AdminDashboard() {
                 const data = await response.json();
                 setEpisodes(data.episodes);
                 setBurgers(data.burgers || []);
+                setQuotes(data.quotes || []);
             }
         } catch (error) {
             console.error('Failed to fetch episodes:', error);
@@ -149,7 +159,8 @@ export default function AdminDashboard() {
                             <div className="admin-episode-list">
                                 {filteredEpisodes.map(episode => {
                                     const episodeBurgers = burgers.filter(b => b.episode_id === episode.id);
-                                    const hasMissingData = !episode.quote_text || !episode.still_url;
+                                    const episodeQuotes = quotes.filter(q => q.episode_id === episode.id);
+                                    const hasMissingData = episodeQuotes.length < 1 || !episode.still_url;
 
                                     return (
                                         <div
@@ -191,6 +202,7 @@ export default function AdminDashboard() {
                 <EpisodeEditor
                     episode={selectedEpisode}
                     burgers={burgers.filter(b => b.episode_id === selectedEpisode.id)}
+                    quotes={quotes.filter(q => q.episode_id === selectedEpisode.id)}
                     onClose={() => setSelectedEpisode(null)}
                     onSave={handleEpisodeSave}
                 />

@@ -7,14 +7,17 @@ interface Episode {
     season: number;
     episode_number: number;
     title: string;
-    quote_text: string | null;
-    quote_speaker: string | null;
-    quote_location: string | null;
     still_url: string | null;
     store_next_door: string | null;
     pest_control_truck: string | null;
     original_air_date: string | null;
     guest_stars: string | null;
+}
+
+interface Quote {
+    quote: string;
+    speaker: string | null;
+    location: string | null;
 }
 
 interface Burger {
@@ -27,15 +30,14 @@ interface Burger {
 interface EpisodeEditorProps {
     episode: Episode;
     burgers: Burger[];
+    quotes: Quote[];
     onClose: () => void;
     onSave: () => void;
 }
 
-export default function EpisodeEditor({ episode, burgers, onClose, onSave }: EpisodeEditorProps) {
+export default function EpisodeEditor({ episode, burgers, quotes, onClose, onSave }: EpisodeEditorProps) {
     const [formData, setFormData] = useState({
-        quote_text: episode.quote_text || '',
-        quote_speaker: episode.quote_speaker || '',
-        quote_location: episode.quote_location || '',
+        quotes: quotes || [],
         still_url: episode.still_url || '',
         store_next_door: episode.store_next_door || '',
         pest_control_truck: episode.pest_control_truck || '',
@@ -45,6 +47,10 @@ export default function EpisodeEditor({ episode, burgers, onClose, onSave }: Epi
 
     const [burgerData, setBurgerData] = useState<Burger[]>(
         burgers.length > 0 ? burgers : [{ id: '', name: '', description: '', episode_id: episode.id }]
+    );
+
+    const [quoteData, setQuoteData] = useState<Quote[]>(
+        quotes?.length > 0 ? quotes : [{ quote: '', speaker: '', location: '' }]
     );
 
     const [isSaving, setIsSaving] = useState(false);
@@ -114,6 +120,21 @@ export default function EpisodeEditor({ episode, burgers, onClose, onSave }: Epi
         setBurgerData(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleQuoteChange = (index: number, field: string, value: string) => {
+        setQuoteData(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    };
+    const handleAddQuote = () => {
+        setQuoteData(prev => [...prev, { quote: '', speaker: '', location: '' }]);
+    };
+
+    const handleRemoveQuote = (index: number) => {
+        setQuoteData(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -127,6 +148,7 @@ export default function EpisodeEditor({ episode, burgers, onClose, onSave }: Epi
                     episodeId: episode.id,
                     episode: formData,
                     burgers: burgerData.filter(b => b.name.trim()),
+                    quotes: quoteData.filter(q => q.quote.trim()),
                 }),
             });
 
@@ -155,39 +177,59 @@ export default function EpisodeEditor({ episode, burgers, onClose, onSave }: Epi
 
                 <form onSubmit={handleSubmit} className="admin-form">
                     <div className="admin-form-section">
-                        <h3>📝 Quote</h3>
-                        <div className="admin-field">
-                            <label className="admin-label">Quote Text</label>
-                            <textarea
-                                value={formData.quote_text}
-                                onChange={(e) => handleChange('quote_text', e.target.value)}
-                                className="admin-textarea"
-                                placeholder="Enter a memorable quote from this episode..."
-                                rows={3}
-                            />
-                        </div>
-                        <div className="admin-field-row">
-                            <div className="admin-field">
-                                <label className="admin-label">Speaker</label>
-                                <input
-                                    type="text"
-                                    value={formData.quote_speaker}
-                                    onChange={(e) => handleChange('quote_speaker', e.target.value)}
-                                    className="admin-input"
-                                    placeholder="e.g., Bob, Linda, Louise..."
-                                />
+                        <h3>📝 Quotes</h3>
+                        {quoteData.map((quote, index) => (
+                            <div key={index} className="admin-burger-row">
+                                <div className="admin-field">
+                                    <label className="admin-label">Quote Text</label>
+                                    <input
+                                        type="text"
+                                        value={quote.quote}
+                                        onChange={(e) => handleQuoteChange(index, 'quote', e.target.value)}
+                                        className="admin-input"
+                                        placeholder="Enter a memorable quote from this episode..."
+                                    />
+                                </div>
+                                <div className="mt-2 admin-field-row">
+                                    <div className="admin-field">
+                                        <label className="admin-label">Speaker</label>
+                                        <input
+                                            type="text"
+                                            value={quote.speaker || ''}
+                                            onChange={(e) => handleQuoteChange(index, 'speaker', e.target.value)}
+                                            className="admin-input"
+                                            placeholder="e.g., Bob, Linda, Louise..."
+                                        />
+                                    </div>
+                                    <div className="admin-field">
+                                        <label className="admin-label">Location</label>
+                                        <input
+                                            type="text"
+                                            value={quote.location || ''}
+                                            onChange={(e) => handleQuoteChange(index, 'location', e.target.value)}
+                                            className="admin-input"
+                                            placeholder="e.g., the restaurant, Wonder Wharf..."
+                                        />
+                                    </div>
+                                </div>
+                                {quoteData.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveQuote(index)}
+                                        className="my-3 admin-button admin-button-danger admin-button-small"
+                                    >
+                                        Remove Quote
+                                    </button>
+                                )}
                             </div>
-                            <div className="admin-field">
-                                <label className="admin-label">Location</label>
-                                <input
-                                    type="text"
-                                    value={formData.quote_location}
-                                    onChange={(e) => handleChange('quote_location', e.target.value)}
-                                    className="admin-input"
-                                    placeholder="e.g., the restaurant, Wonder Wharf..."
-                                />
-                            </div>
-                        </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={handleAddQuote}
+                            className="mt-3 admin-button admin-button-secondary admin-button-small"
+                        >
+                            Add Quote
+                        </button>
                     </div>
 
                     <div className="admin-form-section">

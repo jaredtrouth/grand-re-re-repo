@@ -10,7 +10,8 @@ export interface EpisodeSearchResult {
 
 export interface EpisodeQuote {
   text: string;
-  speaker: string | null; // null until revealed
+  speaker: string | null;
+  location: string | null;
 }
 
 export interface DailyPuzzle {
@@ -22,7 +23,7 @@ export interface DailyPuzzle {
     description?: string | null;
   };
 
-  quote: EpisodeQuote | null;
+  quote?: EpisodeQuote | null;
 
   still_url: string | null;
 

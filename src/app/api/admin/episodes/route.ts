@@ -49,7 +49,17 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to fetch burgers' }, { status: 500 });
         }
 
-        return NextResponse.json({ episodes, burgers });
+        // Fetch all quotes
+        const { data: quotes, error: quotesError } = await supabase
+            .from('quotes')
+            .select('*');
+
+        if (quotesError) {
+            console.error('Error fetching quotes:', quotesError);
+            return NextResponse.json({ error: 'Failed to fetch quotes' }, { status: 500 });
+        }
+
+        return NextResponse.json({ episodes, burgers, quotes });
     } catch (error) {
         console.error('Unexpected error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -66,7 +76,7 @@ export async function PUT(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { episodeId, episode, burgers } = body;
+        const { episodeId, episode, quotes, burgers } = body;
 
         if (!episodeId) {
             return NextResponse.json({ error: 'Episode ID required' }, { status: 400 });
@@ -78,9 +88,6 @@ export async function PUT(request: NextRequest) {
         const { error: episodeError } = await supabase
             .from('episodes')
             .update({
-                quote_text: episode.quote_text || null,
-                quote_speaker: episode.quote_speaker || null,
-                quote_location: episode.quote_location || null,
                 still_url: episode.still_url || null,
                 store_next_door: episode.store_next_door || null,
                 pest_control_truck: episode.pest_control_truck || null,
@@ -92,6 +99,40 @@ export async function PUT(request: NextRequest) {
         if (episodeError) {
             console.error('Error updating episode:', episodeError);
             return NextResponse.json({ error: 'Failed to update episode' }, { status: 500 });
+        }
+
+        if (quotes && quotes.length > 0) {
+            for (const quote of quotes) {
+                if (quote.id) {
+                    // Update existing quote
+                    const { error } = await supabase
+                        .from('quotes')
+                        .update({
+                            quote: quote.quote,
+                            speaker: quote.speaker,
+                            location: quote.location,
+                        })
+                        .eq('id', quote.id);
+
+                    if (error) {
+                        console.error('Error updating quote:', error);
+                    }
+                } else {
+                    // Insert new quote
+                    const { data, error } = await supabase
+                        .from('quotes')
+                        .insert({
+                            quote: quote.quote,
+                            speaker: quote.speaker,
+                            location: quote.location,
+                            episode_id: episodeId,
+                        });
+
+                    if (error) {
+                        console.error('Error inserting quote:', error);
+                    }
+                }
+            }
         }
 
         // Update/insert burgers
