@@ -11,14 +11,32 @@ CREATE TABLE IF NOT EXISTS episodes (
   pest_control_truck TEXT,          -- Nullable for early seasons
   store_next_door TEXT,             -- Nullable for specials
   plot_summary TEXT,
-  image_url TEXT,                   -- Episode image URL (scraped from wiki)
+  still_url TEXT,                   -- Episode image URL (scraped from wiki)
   wiki_url TEXT,
+  original_air_date DATE,
+  guest_stars TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(season, episode_number)
 );
 
 -- Index for common queries
 CREATE INDEX IF NOT EXISTS idx_episodes_season ON episodes(season);
+
+-- =========================================
+-- Episode quotes (one episode can have multiple quotes)
+-- =========================================
+CREATE TABLE IF NOT EXISTS quotes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  episode_id UUID REFERENCES episodes(id) ON DELETE CASCADE NOT NULL,
+  quote TEXT NOT NULL,
+  speaker TEXT NOT NULL,
+  location TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(episode_id, quote)
+);
+
+-- Index for querying quotes by episode
+CREATE INDEX IF NOT EXISTS idx_quotes_episode ON quotes(episode_id);
 
 -- =========================================
 -- Burgers table (one episode can have multiple burgers)
@@ -40,7 +58,9 @@ CREATE INDEX IF NOT EXISTS idx_burgers_episode ON burgers(episode_id);
 -- =========================================
 CREATE TABLE IF NOT EXISTS daily_puzzles (
   date DATE PRIMARY KEY,
-  burger_id UUID REFERENCES burgers(id) NOT NULL
+  burger_id UUID REFERENCES burgers(id) NOT NULL,
+  quote_id UUID REFERENCES quotes(id),
+  UNIQUE(burger_id, quote_id)
 );
 
 -- =========================================
@@ -90,38 +110,39 @@ CREATE OR REPLACE FUNCTION get_daily_puzzle(puzzle_date DATE)
 RETURNS TABLE (
   puzzle_id TEXT,
   answer_hash TEXT,
-  burger_name TEXT,
-  burger_description TEXT,
-  store_next_door TEXT,
-  pest_control TEXT,
-  other_burgers TEXT,
-  plot_summary TEXT,
-  episode_season INT,
-  episode_number INT,
-  episode_title TEXT
+  burger JSONB,
+  episode JSONB,
+  quote JSONB
 ) AS $$
 BEGIN
   RETURN QUERY
   SELECT 
-    puzzle_date::TEXT as puzzle_id,
-    encode(sha256(e.id::TEXT::BYTEA), 'hex') as answer_hash,  -- Hash episode ID for validation
-    b.name as burger_name,
-    b.description as burger_description,
-    COALESCE(e.store_next_door, 'Not featured this episode') as store_next_door,
-    COALESCE(e.pest_control_truck, 'Not featured this episode') as pest_control,
-    -- Get other burgers from the same episode (excluding current)
-    (
-      SELECT string_agg(ob.name, ', ')
-      FROM burgers ob
-      WHERE ob.episode_id = e.id AND ob.id != b.id
-    ) as other_burgers,
-    COALESCE(e.plot_summary, 'Plot summary not available') as plot_summary,
-    e.season as episode_season,
-    e.episode_number as episode_number,
-    e.title as episode_title
+    dp.date::TEXT as puzzle_id,
+    encode(sha256(dp.burger_id::TEXT::BYTEA), 'hex') as answer_hash,
+    jsonb_build_object(
+      'name', b.name,
+      'description', b.description
+    ) as burger,
+    jsonb_build_object(
+      'season', e.season,
+      'episode_number', e.episode_number,
+      'title', e.title,
+      'store_next_door', e.store_next_door,
+      'pest_control', e.pest_control_truck,
+      'plot_summary', e.plot_summary,
+      'still_url', e.still_url,
+      'original_air_date', e.original_air_date,
+      'guest_stars', e.guest_stars
+    ) as episode,
+    jsonb_build_object(
+      'quote_text', q.quote,
+      'speaker', q.speaker,
+      'location', q.location
+    ) as quote
   FROM daily_puzzles dp
   JOIN burgers b ON dp.burger_id = b.id
   JOIN episodes e ON b.episode_id = e.id
+  LEFT JOIN quotes q ON dp.quote_id = q.id
   WHERE dp.date = puzzle_date;
 END;
 $$ LANGUAGE plpgsql;
